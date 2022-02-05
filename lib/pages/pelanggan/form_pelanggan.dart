@@ -4,10 +4,13 @@ import 'package:latihan_sqllite/helper/db_helper.dart';
 import 'package:latihan_sqllite/pages/pelanggan/list_pelanggan.dart';
 
 class PelangganForm extends StatefulWidget {
+  final Map? data;
+
+  const PelangganForm({Key? key, this.data}) : super(key: key);
 
 
   @override
-  _PelangganFormState createState() => _PelangganFormState();
+  _PelangganFormState createState() => _PelangganFormState(this.data);
 }
 
 class _PelangganFormState extends State<PelangganForm> {
@@ -17,13 +20,18 @@ class _PelangganFormState extends State<PelangganForm> {
   final _genders = ["Laki-laki", "Perempuan"];
 
   //inisialisasi controller dalam constructor nya
-  _PelangganFormState(){
+  _PelangganFormState(Map? data){
 
-    txtID = TextEditingController();
-    txtName = TextEditingController();
-    txtDate = TextEditingController();
+    txtID = TextEditingController(text: '${data?['id']??''}');
+    txtName = TextEditingController(text: '${data?['name']??''}');
+    txtDate = TextEditingController(text: '${data?['tgl_lhr']??''}');
+    _gender=data?['gender']??'';
+
+    if(data == null ){
+      lastID().then((value) => txtID.text = '${value+1}');
+
+    }
   //  membuat constractor untuk memanggil id yang terkhir
-    lastID().then((value) => txtID.text = '${value+1}');
   }
 
   // membuat widget untuk menambah id dan juga namenya
@@ -122,9 +130,10 @@ class _PelangganFormState extends State<PelangganForm> {
   Future<int> lastID() async{
     try {
       final _db = await DBHelper.db();
-      const query = 'SELECT MAX(id) as id FROM pelanggan';
+      final query = 'SELECT MAX(id) as id FROM pelanggan';
       final ls = (await _db?.rawQuery(query))!;
 
+      print("query : " + ls.toString());
       if(ls.isNotEmpty ){
         return int.tryParse('${ls[0]['id']}') ?? 0 ;
       }
@@ -140,14 +149,20 @@ class _PelangganFormState extends State<PelangganForm> {
       final _db = await DBHelper.db();
       var data  = {
         'id' : txtID.value.text,
-        'nama' : txtName.value.text,
+        'name' : txtName.value.text,
         'gender' : _gender,
         'tgl_lhr' : txtDate.value.text
       };
-      final id = await _db?.insert('pelanggan', data);
+      final id = data.isEmpty ?
+          await _db?.insert('pelanggan', data)
+          :await _db?.update('pelanggan', data,where:'id=?',whereArgs: [data['id']]);
+      //
+      // final id = await _db?.insert('pelanggan', data);
+      // print("simpan : " + id.toString());
       return id! > 0 ;
-    } catch (e) {}
-    return false ;
+    } catch (e) {
+      rethrow;
+    }
   }
 
 

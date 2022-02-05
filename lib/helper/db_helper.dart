@@ -1,13 +1,13 @@
 import 'package:sqflite/sqflite.dart';
 
 class DBHelper{
-  static Database? _db;
-  static const String query_table_pelangan =""
-      "CREATE TABLE pelanggan("
-      "id INTEGER PRIMARY KEY "
-      "nama TEXT"
-      "gender TEXT"
-      "tgl_lhr TEXT)";
+  static Database ?_db;
+  static const String QUERY_TBL_PELANGGAN ="""
+      CREATE TABLE pelanggan(
+      id INTEGER PRIMARY KEY,
+      name TEXT,
+      gender TEXT,
+      tgl_lhr TEXT)""";
 
 //  method static untuk akses ke var db nya
 static Future<Database?> db() async{
@@ -15,11 +15,11 @@ static Future<Database?> db() async{
 }
 
    Future<Database> konekDB() async {
-  return await openDatabase('dbpelanggan.db',
+  return await openDatabase('dbsaya.db',
   version: 1,
     onCreate:
-    (db, version){
-    db.execute(query_table_pelangan);
+    (db, version) async{
+     await db.execute(QUERY_TBL_PELANGGAN);
     }
   );
    }
